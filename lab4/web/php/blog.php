@@ -6,6 +6,37 @@ $method = $_SERVER['REQUEST_METHOD'];
 $response = ['status' => 'error', 'message' => 'Invalid request'];
 
 switch ($method) {
+    case 'GET':
+        if (isset($_GET['id'])) {
+            //get by id
+            $id = $_GET['id'];
+            $stmt = $conn->prepare("SELECT * FROM tb_blog WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $blog = $result->fetch_assoc();
+
+            if ($blog) {
+                $response = ['status' => 'success', 'data' => $blog];
+            } else {
+                $response = ['status' => 'error', 'message' => 'Blog not found'];
+            }
+        } else {
+            //get all
+            $blogs = [];
+
+            $stmt = $conn->prepare("SELECT * FROM tb_blog");
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            while ($row = $result->fetch_assoc()) {
+                $blogs[] = $row;
+            }
+
+            $response = ['status' => 'success', 'data' => $blogs];
+        }
+        break;
+
     case 'POST': // Insert new blog
         $title = $_POST['title'] ?? null;
         $post = $_POST['post'] ?? null;
